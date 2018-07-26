@@ -1,0 +1,20 @@
+version: "3.6"
+
+services:
+  cats:
+    image: mikesir87/cats
+    networks:
+      - app-entry
+    deploy:
+      labels:
+        traefik.docker.network: app-entry
+        traefik.backend: cats
+        traefik.frontend.rule: "Path: /"
+        traefik.port: 5000
+      placement:
+        constraints:
+          - node.role == worker
+
+networks:
+  app-entry:
+    external: true

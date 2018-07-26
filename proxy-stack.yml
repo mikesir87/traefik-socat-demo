@@ -1,0 +1,33 @@
+version: "3.6"
+
+services:
+  socat:
+    image: alpine/socat
+    command: tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - mgmt
+    deploy:
+      placement:
+        constraints:
+          - node.role == manager
+
+  traefik:
+    image: traefik:latest
+    command: --docker --docker.endpoint=tcp://socat:2375 --docker.watch --docker.swarmMode
+    ports:
+      - 80:80
+    networks:
+      - mgmt
+      - app-entry
+    deploy:
+      placement:
+        constraints:
+          - node.role == worker
+
+networks:
+  mgmt:
+    external: true
+  app-entry:
+    external: true
